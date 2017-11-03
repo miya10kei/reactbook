@@ -122,11 +122,40 @@
               )
             )
           },
+          _download: function(format, e) {
+            var content = format === 'json'
+              ? JSON.stringify(this.state.data)
+              : this.state.data.reduce(function(preRow, curRow) {
+                return preRow + curRow.reduce(function(preCell, curCell, idx) {
+                  return preCell
+                  + '"'
+                  + curCell.replace(/"/g, '""')
+                  + '"'
+                  + (idx < curRow.length - 1 ? ',' : '')
+                }, '')
+                + '\n'
+            }, '')
+            var URL = window.URL || window.webkitURL
+            var blob = new Blob([content], {type: 'text/' + format})
+            e.target.href = URL.createObjectURL(blob)
+            e.target.download = 'data.' + format
+          },
           _renderToolbar: function() {
-            return React.DOM.button({
-              onClick: this._toggleSearch,
-              className: 'toolbar',
-            }, '検索')
+            return React.DOM.div({
+              className: 'toolbar'
+            },
+              React.DOM.button({
+                onClick: this._toggleSearch,
+              }, '検索'),
+              React.DOM.a({
+                onClick: this._download.bind(this, 'json'),
+                href: 'data.json',
+              }, 'JSONで保存'),
+              React.DOM.a({
+                onClick: this._download.bind(this, 'csv'),
+                href: 'data.csv',
+              }, 'CSで保存')
+            )
           },
           _renderTable: function() {
             return React.DOM.table(null,
